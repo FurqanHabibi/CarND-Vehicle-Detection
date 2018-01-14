@@ -28,6 +28,10 @@ ystop = 656
 scale = 1.5
 cells_per_step = 2
 
+### Detection results of last n frames
+history_bbox_list = []
+n_history = 2
+
 # Define a function to return HOG features and visualization
 def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
                         vis=False, feature_vec=True):
@@ -315,13 +319,41 @@ def detect_cars(image, candidate_cars_boxes):
 
     return bbox_list, heatmap
 
+def rect_overlap(rect1, rect2):
+    '''Overlapping rectangles overlap both horizontally & vertically
+    '''
+    
+    def range_overlap(a_min, a_max, b_min, b_max):
+        '''Neither range is completely greater than the other
+        '''
+        return (a_min <= b_max) and (b_min <= a_max)
+
+    return range_overlap(rect1[0][0], rect1[1][0], rect2[0][0], rect2[1][0]) and range_overlap(rect1[0][1], rect1[1][1], rect2[0][1], rect2[1][1])
+
+def history_check(history_bbox_list, n_history, final_boxes):
+    checked_final_boxes = []
+    for final_box in final_boxes:
+        for bbox_list in history_bbox_list:
+            for bbox in bbox_list:
+                # found an overlap in a history frame
+                if rect_overlap(final_box, bbox):
+                    break
+            else:
+                # didn't find any overlap in a history frame
+                # exit from the loop, causing the outer else to not be called
+                break
+        else:
+            # find overlap in all history frame
+            checked_final_boxes.append(final_box)
+    
+    return checked_final_boxes
+
 def save_image(image, filename, suffix):
     filename = filename.replace('\\', '/')
     splitted_folder_file = filename.split('/')
     splitted_file_ext = splitted_folder_file[1].split('.')
     write_name = splitted_folder_file[0] + '/' + splitted_file_ext[0] + '_' + suffix + '.' + splitted_file_ext[1]
     cv2.imwrite(write_name, image)
-
 
 if __name__ == '__main__':
 
@@ -368,8 +400,13 @@ if __name__ == '__main__':
         candidate_boxes.extend(find_candidate_cars(image, color_space, ystart, ystop, 2., clf, X_scaler, orient, pix_per_cell, cell_per_block, 2, spatial_size, hist_bins))
         # Find the final detection boxes using heatmap technique
         final_boxes, heatmap = detect_cars(image, candidate_boxes)
+        # Check with history, will accept bounding box if it overlaps with last n detections
+        checked_final_boxes = history_check(history_bbox_list, n_history, final_boxes)
+        if len(history_bbox_list) == 2:
+            history_bbox_list.pop(0)
+        history_bbox_list.append(final_boxes)
         # Draw the boxes and save the image
-        final_image = draw_boxes(np.copy(image), final_boxes)
+        final_image = draw_boxes(np.copy(image), checked_final_boxes)
         return final_image
 
     # Apply to test videos
