@@ -27,7 +27,7 @@ You're reading it!
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images. Explain how you settled on your final choice of HOG parameters.
 
-The code for this step is contained in lines 36 through 53 of the file called [vehicle_detection.py](vehicle_detection.py#36).  
+The code for this step is contained in lines 36 through 53 of the file called [vehicle_detection.py](vehicle_detection.py#L36).  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
@@ -56,13 +56,13 @@ Based on the above, I decided to use the `LUV` color space. Here is an example o
 
 #### 2. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-The code for this is contained in lines 137 through 183 of  [vehicle_detection.py](vehicle_detection.py#137). For the classifier, I decided to use the one recommended in the lesson, which is the Linear SVM. For the features, beside the HOG features, I also included the raw pixel image that's been converted to `LUV` color space and binned spatially into 32x32, and the color histogram with 32 bins.
+The code for this is contained in lines 137 through 183 of  [vehicle_detection.py](vehicle_detection.py#L137). For the classifier, I decided to use the one recommended in the lesson, which is the Linear SVM. For the features, beside the HOG features, I also included the raw pixel image that's been converted to `LUV` color space and binned spatially into 32x32, and the color histogram with 32 bins.
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-The code for this is contained in lines 186 through 266 of  [vehicle_detection.py](vehicle_detection.py#186). I implemented the search with only a single extract of HOG features and then subsampling it to get the window HOG feature. This is to increase the performance of the pipeline.
+The code for this is contained in lines 186 through 266 of  [vehicle_detection.py](vehicle_detection.py#L186). I implemented the search with only a single extract of HOG features and then subsampling it to get the window HOG feature. This is to increase the performance of the pipeline.
 
 The search can also be executed with different scales of window sizes. To determine these scales, I experimented quite a lot. First I decided to execute the search only once with scale of 1 and step of 2 pixels. Here is an example image:
 
@@ -102,7 +102,7 @@ Here's a [link to my video result](./project_video_detected.mp4)
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected. The code for this is contained in lines 269 through 320 of  [vehicle_detection.py](vehicle_detection.py#269).
+I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected. The code for this is contained in lines 269 through 320 of  [vehicle_detection.py](vehicle_detection.py#L269).
 
 Here's an example of the original positive detections, it's corresponding heatmap, and the bounding box result of `scipy.ndimage.measurements.label()`.
 
@@ -110,7 +110,7 @@ Here's an example of the original positive detections, it's corresponding heatma
 ![Test 1 Heatmap](output_images/test1_heatmap.jpg "Test 1 Heatmap")
 ![Test 1 Final](output_images/test1_final_boxes.jpg "Test 1 Final")
 
-To combat false positives, I decided to record the history of last 2 frame detections. Then, the resulting final bounding boxes from `scipy.ndimage.measurements.label()` of the new frame will be compared to the last 2 detections. A bounding box will be allowed to pass if and only if it intersects with at least one bounding box in each of the last 2 frame detections. Meaning, the new bounding box have to also be detected (at least parts of it) in all 2 previous detection. If it does not, then it will not be outputted in the new frame final detection. The code for this is contained in lines 333 through 349 of  [vehicle_detection.py](vehicle_detection.py#333).
+To combat false positives, I decided to record the history of last 2 frame detections. Then, the resulting final bounding boxes from `scipy.ndimage.measurements.label()` of the new frame will be compared to the last 2 detections. A bounding box will be allowed to pass if and only if it intersects with at least one bounding box in each of the last 2 frame detections. Meaning, the new bounding box have to also be detected (at least parts of it) in all 2 previous detection. If it does not, then it will not be outputted in the new frame final detection. The code for this is contained in lines 333 through 349 of  [vehicle_detection.py](vehicle_detection.py#L333).
 
 Here are some examples of detections before and after filtering it with the previous 2 frames:
 
