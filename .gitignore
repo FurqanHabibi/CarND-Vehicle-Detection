@@ -3,3 +3,5 @@ training_data/*/*/*
 !project_video.mp4
 !test_video.mp4
 !training_data/non-vehicles/additional/*
+!project_video_detected.mp4
+!test_video_detected.mp4
